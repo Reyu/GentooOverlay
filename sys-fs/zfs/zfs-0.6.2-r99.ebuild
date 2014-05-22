@@ -1,11 +1,11 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/sys-fs/zfs/zfs-9999.ebuild,v 1.47 2013/08/24 00:01:50 ryao Exp $
+# $Header: /var/cvsroot/gentoo-x86/sys-fs/zfs/zfs-0.6.2-r5.ebuild,v 1.2 2014/04/11 04:44:53 ryao Exp $
 
 EAPI="5"
-PYTHON_COMPAT=( python{2_5,2_6,2_7} )
+PYTHON_COMPAT=( python{2_6,2_7,3_1,3_2,3_3} )
 
-inherit python-single-r1
+inherit python-r1
 
 AT_M4DIR="config"
 AUTOTOOLS_AUTORECONF="1"
@@ -13,11 +13,12 @@ AUTOTOOLS_IN_SOURCE_BUILD="1"
 
 if [ ${PV} == "9999" ] ; then
 	inherit git-2 linux-mod
-	EGIT_REPO_URI="git://github.com/Rudd-O/${PN}.git"
+	EGIT_REPO_URI="git://github.com/zfsonlinux/${PN}.git"
 else
 	inherit eutils versionator
 	MY_PV=$(replace_version_separator 3 '-')
-	SRC_URI="https://github.com/zfsonlinux/${PN}/archive/${PN}-${MY_PV}.tar.gz"
+	SRC_URI="https://github.com/zfsonlinux/${PN}/archive/${PN}-${MY_PV}.tar.gz
+		http://dev.gentoo.org/~ryao/dist/${PN}-kmod-${MY_PV}-p4.tar.xz"
 	S="${WORKDIR}/${PN}-${PN}-${MY_PV}"
 	KEYWORDS="~amd64"
 fi
@@ -27,13 +28,14 @@ inherit bash-completion-r1 flag-o-matic toolchain-funcs autotools-utils udev sys
 DESCRIPTION="Userland utilities for ZFS Linux kernel module"
 HOMEPAGE="http://zfsonlinux.org/"
 
-LICENSE="BSD-2 CDDL MIT"
+LICENSE="BSD-2 CDDL bash-completion? ( MIT )"
 SLOT="0"
-IUSE="bash-completion custom-cflags kernel-builtin +rootfs selinux test-suite static-libs"
+IUSE="bash-completion custom-cflags debug dracut kernel-builtin +rootfs selinux test-suite static-libs"
 RESTRICT="test"
 
 COMMON_DEPEND="
 	selinux? ( sys-libs/libselinux )
+	dracut? ( sys-kernel/dracut )
 	sys-apps/util-linux[static-libs?]
 	sys-libs/zlib[static-libs(+)?]
 	virtual/awk
@@ -68,6 +70,14 @@ pkg_setup() {
 }
 
 src_prepare() {
+	if [ ${PV} != "9999" ]
+	then
+		# Apply patch set
+		EPATCH_SUFFIX="patch" \
+		EPATCH_FORCE="yes" \
+		epatch "${WORKDIR}/${PN}-kmod-${MY_PV}-patches"
+	fi
+
 	# Update paths
 	sed -e "s|/sbin/lsmod|/bin/lsmod|" \
 		-e "s|/usr/bin/scsi-rescan|/usr/sbin/rescan-scsi-bus|" \
@@ -86,6 +96,8 @@ src_configure() {
 		--with-linux="${KV_DIR}"
 		--with-linux-obj="${KV_OUT_DIR}"
 		--with-udevdir="$(udev_get_udevdir)"
+		--with-blkid
+		$(use_enable debug)
 		$(use_with selinux)
 	)
 	autotools-utils_src_configure
@@ -104,10 +116,10 @@ src_configure() {
 src_install() {
 	autotools-utils_src_install
 	gen_usr_ldscript -a uutil nvpair zpool zfs
-	rm -rf "${ED}usr/lib/dracut"
+	use dracut || rm -rf "${ED}usr/lib/dracut"
 	use test-suite || rm -rf "${ED}usr/share/zfs"
 
-	use bash-completion && newbashcomp "${FILESDIR}/bash-completion" zfs
+	use bash-completion && newbashcomp "${FILESDIR}/bash-completion-r1" zfs
 
 	exeinto /usr/libexec
 	doexe "${T}/zfs-init.sh"
