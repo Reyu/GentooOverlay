@@ -1,11 +1,11 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/sys-fs/zfs/zfs-0.6.2-r5.ebuild,v 1.2 2014/04/11 04:44:53 ryao Exp $
+# $Header: /var/cvsroot/gentoo-x86/sys-fs/zfs/zfs-0.6.2.ebuild,v 1.3 2013/09/05 19:44:53 mgorny Exp $
 
 EAPI="5"
-PYTHON_COMPAT=( python{2_6,2_7,3_1,3_2,3_3} )
+PYTHON_COMPAT=( python{2_6,2_7} )
 
-inherit python-r1
+inherit python-single-r1
 
 AT_M4DIR="config"
 AUTOTOOLS_AUTORECONF="1"
@@ -17,8 +17,7 @@ if [ ${PV} == "9999" ] ; then
 else
 	inherit eutils versionator
 	MY_PV=$(replace_version_separator 3 '-')
-	SRC_URI="https://github.com/zfsonlinux/${PN}/archive/${PN}-${MY_PV}.tar.gz
-		http://dev.gentoo.org/~ryao/dist/${PN}-kmod-${MY_PV}-p4.tar.xz"
+	SRC_URI="https://github.com/zfsonlinux/${PN}/archive/${PN}-${MY_PV}.tar.gz"
 	S="${WORKDIR}/${PN}-${PN}-${MY_PV}"
 	KEYWORDS="~amd64"
 fi
@@ -28,8 +27,9 @@ inherit bash-completion-r1 flag-o-matic toolchain-funcs autotools-utils udev sys
 DESCRIPTION="Userland utilities for ZFS Linux kernel module"
 HOMEPAGE="http://zfsonlinux.org/"
 
-LICENSE="BSD-2 CDDL bash-completion? ( MIT )"
+LICENSE="BSD-2 CDDL MIT"
 SLOT="0"
+IUSE="bash-completion custom-cflags kernel-builtin +rootfs selinux test-suite static-libs"
 RESTRICT="test"
 
 COMMON_DEPEND="
@@ -68,14 +68,6 @@ pkg_setup() {
 }
 
 src_prepare() {
-	if [ ${PV} != "9999" ]
-	then
-		# Apply patch set
-		EPATCH_SUFFIX="patch" \
-		EPATCH_FORCE="yes" \
-		epatch "${WORKDIR}/${PN}-kmod-${MY_PV}-patches"
-	fi
-
 	# Update paths
 	sed -e "s|/sbin/lsmod|/bin/lsmod|" \
 		-e "s|/usr/bin/scsi-rescan|/usr/sbin/rescan-scsi-bus|" \
@@ -94,8 +86,6 @@ src_configure() {
 		--with-linux="${KV_DIR}"
 		--with-linux-obj="${KV_OUT_DIR}"
 		--with-udevdir="$(udev_get_udevdir)"
-		--with-blkid
-		$(use_enable debug)
 		$(use_with selinux)
 	)
 	autotools-utils_src_configure
@@ -116,7 +106,7 @@ src_install() {
 	gen_usr_ldscript -a uutil nvpair zpool zfs
 	use test-suite || rm -rf "${ED}usr/share/zfs"
 
-	use bash-completion && newbashcomp "${FILESDIR}/bash-completion-r1" zfs
+	use bash-completion && newbashcomp "${FILESDIR}/bash-completion" zfs
 
 	exeinto /usr/libexec
 	doexe "${T}/zfs-init.sh"

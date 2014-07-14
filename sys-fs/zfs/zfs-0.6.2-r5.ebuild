@@ -30,6 +30,7 @@ HOMEPAGE="http://zfsonlinux.org/"
 
 LICENSE="BSD-2 CDDL bash-completion? ( MIT )"
 SLOT="0"
+IUSE="bash-completion custom-cflags debug kernel-builtin +rootfs selinux test-suite static-libs"
 RESTRICT="test"
 
 COMMON_DEPEND="

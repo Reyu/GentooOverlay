@@ -9,6 +9,5 @@
 		<flag name="kernel-builtin">Disable dependency on sys-fs/zfs-kmod under the assumption that ZFS is part of the kernel source tree</flag>
 		<flag name="rootfs">Enable dependencies required for booting off a pool containing a rootfs</flag>
 		<flag name="test-suite">Install regression test suite</flag>
-		<flag name="dracut">Install Dracut initramfs module</flag>
 	</use>
 </pkgmetadata>
