@@ -93,7 +93,7 @@ src_configure() {
 		--with-config=user
 		--with-linux="${KV_DIR}"
 		--with-linux-obj="${KV_OUT_DIR}"
-		--with-udevdir="$(udev_get_udevdir)"
+		--with-udevdir="$(get_udevdir)"
 		--with-blkid
 		$(use_enable debug)
 	)
