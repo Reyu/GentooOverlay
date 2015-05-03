@@ -15,9 +15,8 @@ else
 	inherit eutils versionator
 	MY_PV=$(replace_version_separator 3 '-')
 	SRC_URI="https://codeload.github.com/graysky2/${PN}/tar.gz/v${PV}"
+	KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86"
 fi
-
-KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86"
 
 COMMON_DEPEND="media-sound/pulseaudio"
 DEPEND="${COMMON_DEPEND}"
