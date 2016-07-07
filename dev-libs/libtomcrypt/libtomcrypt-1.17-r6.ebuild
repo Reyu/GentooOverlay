@@ -7,35 +7,19 @@ EAPI="2"
 inherit flag-o-matic multilib toolchain-funcs
 
 DESCRIPTION="modular and portable cryptographic toolkit"
-HOMEPAGE="http://libtom.org/?page=features&whatfile=crypt"
-SRC_URI="http://libtom.org/files/crypt-${PV}.tar.bz2"
+HOMEPAGE="http://www.libtom.org/LibTomCrypt/"
+SRC_URI="https://github.com/libtom/libtomcrypt/releases/download/${PV}/crypt-${PV}.tar.bz2"
 
 LICENSE="WTFPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc ~x86"
 IUSE="doc"
 
-RDEPEND="dev-libs/libtommath"
 DEPEND="${RDEPEND}
 	doc? ( virtual/latex-base app-text/ghostscript-gpl )"
 
 src_prepare() {
 	use doc || sed -i '/^install:/s:docs::' makefile
-	epatch "${FILESDIR}"/libtomcrypt-1.17-r2-libtool-tag-and-make-fix.patch
-	sed -i \
-		-e "s:--mode=link gcc:--mode=link $(tc-getCC) ${LDFLAGS} --tag CC $(tc-getCC):g" \
-		-e "s: gcc: $(tc-getCC):g" \
-		{,testprof/}makefile.shared || die
-}
-
-src_compile() {
-	append-flags -DLTM_DESC
-	export LIBPATH="/usr/$(get_libdir)"
-	EXTRALIBS="-ltommath" \
-		CC=$(tc-getCC) \
-		IGNORE_SPEED=1 \
-		emake -f makefile.shared \
-		|| die "emake failed"
 }
 
 src_test() {
