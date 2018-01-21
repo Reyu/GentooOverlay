@@ -1,0 +1,8 @@
+/var/lib/zcashd/debug.log {
+	missingok
+	weekly
+	sharedscripts
+	postrotate
+		killall -HUP zcashd
+	endscript
+}
