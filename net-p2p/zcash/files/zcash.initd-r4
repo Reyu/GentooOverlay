@@ -1,0 +1,53 @@
+#!/sbin/openrc-run
+# Copyright 1999-2017 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+description="Zcash cryptocurrency P2P network daemon"
+
+: ${ZCASHD_USER:="zcash"}
+: ${ZCASHD_DATADIR:="/var/lib/zcashd"}
+: ${ZCASHD_CONFIGFILE:="/etc/zcash/zcash.conf"}
+: ${ZCASHD_NICE:=0}
+: ${ZCASHD_SIGTERM_TIMEOUT:=60}
+
+pidfile="/run/${RC_SVCNAME}/zcashd.pid"
+command="/usr/bin/zcashd"
+command_args="-pid=${pidfile} \
+	-conf=${ZCASHD_CONFIGFILE} \
+	-datadir=${ZCASHD_DATADIR} \
+	${ZCASHD_OPTS}"
+command_user="${ZCASHD_USER}"
+retry="${ZCASHD_SIGTERM_TIMEOUT}"
+required_files="${ZCASHD_CONFIGFILE}"
+start_stop_daemon_args="-N ${ZCASHD_NICE} -w 2000"
+
+depend() {
+	need localmount net
+}
+
+start_pre() {
+	checkpath -d -m 0755 -o ${ZCASHD_USER} "${pidfile%/*}"
+	checkpath -f -m 0600 -o ${ZCASHD_USER} "${ZCASHD_CONFIGFILE}"
+
+	if [ "${RC_CMD}" != "restart" ]; then
+		checkconfig || return 1
+	fi
+}
+
+checkconfig()
+{
+	if ! grep -qs '^rpcpassword=' "${ZCASHD_CONFIGFILE}"; then
+		eerror
+		eerror "ERROR: You must set a secure rpcpassword to run zcashd."
+		eerror "The setting must appear in ${ZCASHD_CONFIGFILE}"
+		eerror
+		eerror "This password is security critical to securing wallets "
+		eerror "and must not be the same as the rpcuser setting."
+		eerror "You can generate a suitable random password using the following"
+		eerror "command from the shell:"
+		eerror
+		eerror "bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'"
+		eerror
+		return 1
+	fi
+}
