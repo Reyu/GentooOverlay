@@ -5,15 +5,16 @@ EAPI=5
 
 PYTHON_COMPAT=( python2_{6,7} python3_{4,5,6} pypy )
 
-inherit check-reqs distutils-r1
+inherit distutils-r1
 
 DESCRIPTION="Python client for Consul "
-HOMEPAGE="https://github.com/cablehead/python-consul"
+HOMEPAGE="https://pypi.org/project/python-consul https://github.com/cablehead/python-consul"
 SRC_URI="mirror://pypi/${PN:0:1}/${PN}/${P}.tar.gz"
 
 LICENSE="MIT"
 SLOT="0"
 KEYWORDS="amd64 x86"
+IUSE=""
 
 DEPEND="
 	dev-python/setuptools[${PYTHON_USEDEP}]
