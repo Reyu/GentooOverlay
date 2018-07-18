@@ -12,8 +12,8 @@ KEYWORDS="amd64"
 
 RDEPEND="
 	app-crypt/libsecret
+	gnome-base/gnome-keyring
 	dev-qt/qtmultimedia
-	gnome-keyring
 	media-fonts/dejavu"
 
 S=${WORKDIR}/${MY_P}
