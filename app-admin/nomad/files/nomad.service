@@ -1,0 +1,17 @@
+[Unit]
+Description=nomad agent
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+User=consul
+Group=consul
+Environment=NOMAD_AGENT_OPTS="-config-dir=/etc/nomad.d"
+ExecStart=/usr/bin/nomad agent $NOMAD_AGENT_OPTS
+ExecReload=/usr/bin/nomad reload
+KillMode=process
+Restart=on-failure
+LimitNOFILE=65536
+
+[Install]
+WantedBy=default.target
